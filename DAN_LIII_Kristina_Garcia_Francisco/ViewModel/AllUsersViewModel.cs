@@ -3,7 +3,10 @@ using DAN_LIII_Kristina_Garcia_Francisco.Model;
 using DAN_LIII_Kristina_Garcia_Francisco.View;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
+using System.Threading;
 using System.Windows;
 using System.Windows.Input;
 
@@ -15,7 +18,17 @@ namespace DAN_LIII_Kristina_Garcia_Francisco.ViewModel
     class AllUsersViewModel : BaseViewModel
     {
         AllUsers allUsers;
+        Manager manWindow;
+        EnterSalaryValue salaryWindow;
         Service service = new Service();
+        /// <summary>
+        /// Background worker
+        /// </summary>
+        private readonly BackgroundWorker bgWorker = new BackgroundWorker();
+        /// <summary>
+        /// Check if background worker is running
+        /// </summary>
+        private bool _isRunning = false;
 
         #region Constructor
         /// <summary>
@@ -30,6 +43,46 @@ namespace DAN_LIII_Kristina_Garcia_Francisco.ViewModel
             ManagerList = service.GetAllManagers().ToList();
             EmployeeList = service.GetAllEmployees().ToList();
             UserList = service.GetAllUsers().ToList();
+        }
+
+        /// <summary>
+        /// Constructor with manager window param
+        /// </summary>
+        /// <param name="AllUsers">opens the manager window</param>
+        public AllUsersViewModel(Manager usersOpen)
+        {
+            manWindow = usersOpen;
+            ManagersEmployees = service.GetAllEmployeesOnSpecificFloor(service.GetManagerFloorNumber(LoggedUser.CurrentUser.UserID));
+            EmployeesMonotorReport = service.GetAllEmployeesMonitorReportOnSpecificFloor(service.GetManagerFloorNumber(LoggedUser.CurrentUser.UserID));           
+        }
+
+        /// <summary>
+        /// Constructor with EnterSalaryValue window param
+        /// </summary>
+        /// <param name="salaryOpen">opens the salary window</param>
+        /// <param name="employeeEdit">gets the employee info that is being edited</param>
+        public AllUsersViewModel(EnterSalaryValue salaryOpen, vwEmployee employeeEdit)
+        {
+            employee = employeeEdit;
+            salaryWindow = salaryOpen;
+        }
+
+        /// <summary>
+        /// Constructor with AllEnterSalaryValue window param
+        /// </summary>
+        /// <param name="salaryOpen">opens the salary window</param>
+        public AllUsersViewModel(EnterSalaryValue salaryOpen)
+        {
+            ProgressBarVisibility = Visibility.Collapsed;
+            salaryWindow = salaryOpen;
+            EmployeesMonotorReport = service.GetAllEmployeesMonitorReportOnSpecificFloor(service.GetManagerFloorNumber(LoggedUser.CurrentUser.UserID));
+            bgWorker.DoWork += WorkerOnDoWork;
+            bgWorker.WorkerReportsProgress = true;
+            bgWorker.WorkerSupportsCancellation = true;
+            bgWorker.ProgressChanged += WorkerOnProgressChanged;
+            bgWorker.RunWorkerCompleted += WorkerOnRunWorkerCompleted;
+            InfoLabelBG = "#17a2b8";
+            InfoLabel = "Salaries calculation";
         }
         #endregion
 
@@ -82,6 +135,40 @@ namespace DAN_LIII_Kristina_Garcia_Francisco.ViewModel
             {
                 employeeList = value;
                 OnPropertyChanged("EmployeeList");
+            }
+        }
+
+        /// <summary>
+        /// List of employees of the manager
+        /// </summary>
+        private List<vwEmployee> managersEmployees;
+        public List<vwEmployee> ManagersEmployees
+        {
+            get
+            {
+                return managersEmployees;
+            }
+            set
+            {
+                managersEmployees = value;
+                OnPropertyChanged("ManagersEmployees");
+            }
+        }
+
+        /// <summary>
+        /// List of specific employees
+        /// </summary>
+        private List<vwEmployee> employeesMonotorReport;
+        public List<vwEmployee> EmployeesMonotorReport
+        {
+            get
+            {
+                return employeesMonotorReport;
+            }
+            set
+            {
+                employeesMonotorReport = value;
+                OnPropertyChanged("EmployeesMonotorReport");
             }
         }
 
@@ -150,6 +237,186 @@ namespace DAN_LIII_Kristina_Garcia_Francisco.ViewModel
             {
                 employee = value;
                 OnPropertyChanged("Employee");
+            }
+        }
+
+        /// <summary>
+        /// Info label
+        /// </summary>
+        private string infoLabel;
+        public string InfoLabel
+        {
+            get
+            {
+                return infoLabel;
+            }
+            set
+            {
+                infoLabel = value;
+                OnPropertyChanged("InfoLabel");
+            }
+        }
+
+        /// <summary>
+        /// Info label background
+        /// </summary>
+        private string infoLabelBG;
+        public string InfoLabelBG
+        {
+            get
+            {
+                return infoLabelBG;
+            }
+            set
+            {
+                infoLabelBG = value;
+                OnPropertyChanged("InfoLabelBG");
+            }
+        }
+
+        /// <summary>
+        /// Salary Info label
+        /// </summary>
+        private string salaryInfoLabel;
+        public string SalaryInfoLabel
+        {
+            get
+            {
+                return salaryInfoLabel;
+            }
+            set
+            {
+                salaryInfoLabel = value;
+                OnPropertyChanged("SalaryInfoLabel");
+            }
+        }
+
+        /// <summary>
+        /// Salary value
+        /// </summary>
+        private int salaryValue;
+        public int SalaryValue
+        {
+            get
+            {
+                return salaryValue;
+            }
+            set
+            {
+                salaryValue = value;
+                OnPropertyChanged("SalaryValue");
+            }
+        }
+
+        /// <summary>
+        /// The progress bar property
+        /// </summary>
+        private int currentProgress;
+        public int CurrentProgress
+        {
+            get
+            {
+                return currentProgress;
+            }
+            set
+            {
+                if (currentProgress != value)
+                {
+                    currentProgress = value;
+                    OnPropertyChanged("CurrentProgress");
+                }
+            }
+        }
+
+        /// <summary>
+        /// The progress bar property
+        /// </summary>
+        private Visibility progressBarVisibility;
+        public Visibility ProgressBarVisibility
+        {
+            get
+            {
+                return progressBarVisibility;
+            }
+            set
+            {
+                progressBarVisibility = value;
+                OnPropertyChanged("ProgressBarVisibility");
+            }
+        }
+        #endregion
+
+        #region Background worker
+        /// <summary>
+        /// Updates the progress bar and prints the value
+        /// </summary>
+        /// <param name="sender">objecy sender</param>
+        /// <param name="e">progress changed event</param>
+        private void WorkerOnProgressChanged(object sender, ProgressChangedEventArgs e)
+        {
+            CurrentProgress = e.ProgressPercentage;
+            SalaryInfoLabel = CurrentProgress + " %";
+        }
+
+        /// <summary>
+        /// Method that the background worker executes
+        /// </summary>
+        /// <param name="sender">object sender</param>
+        /// <param name="e">do work event</param>
+        private void WorkerOnDoWork(object sender, DoWorkEventArgs e)
+        {
+            ProgressBarVisibility = Visibility.Visible;
+            Random rng = new Random();
+            // Restart progress
+            bgWorker.ReportProgress(0);
+            int counter = EmployeesMonotorReport.Count;
+            for (int i = 1; i < counter + 1; i++)
+            {
+                Thread.Sleep(1000);
+                // Calling ReportProgress() method raises ProgressChanged event
+                // To this method pass the percentage of processing that is complete
+
+                string salary = service.CalculateSalary(LoggedUser.CurrentUser.UserID, EmployeesMonotorReport[i - 1], SalaryValue).ToString();
+                EmployeesMonotorReport[i - 1].Salary = salary;
+                service.AddEmployee(EmployeesMonotorReport[i - 1]);
+
+                if (i == counter)
+                {
+                    // 100% if all reports                   
+                    bgWorker.ReportProgress(100);
+                }
+                else
+                {
+                    bgWorker.ReportProgress(100 / counter * i);
+                }
+
+                SalaryInfoLabel = "";
+                _isRunning = false;
+
+                // Cancel the asynchronous operation if still in progress
+                if (bgWorker.IsBusy)
+                {
+                    bgWorker.CancelAsync();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Print the appropriate message depending how the worker finished.
+        /// </summary>
+        /// <param name="sender">object sender</param>
+        /// <param name="e">worker completed event</param>
+        private void WorkerOnRunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
+        {
+            if (e.Error != null)
+            {
+                SalaryInfoLabel = e.Error.Message;
+                _isRunning = false;
+            }
+            else
+            {
+                InfoLabelBG = "#28a745";
+                InfoLabel = "Finished updaing the salaries";
             }
         }
         #endregion
@@ -336,7 +603,16 @@ namespace DAN_LIII_Kristina_Garcia_Francisco.ViewModel
         /// <returns>true</returns>
         private bool CanAddNewEmployeeExecute()
         {
-            return true;
+            if (ManagerList.Count == 0)
+            {
+                InfoLabelBG = "#17a2b8";
+                InfoLabel = "Currently no Managers in the database";
+                return false;
+            }
+            else
+            {
+                return true;
+            }
         }
 
         /// <summary>
@@ -387,6 +663,197 @@ namespace DAN_LIII_Kristina_Garcia_Francisco.ViewModel
         }
 
         /// <summary>
+        /// Command that tries to calculate salary
+        /// </summary>
+        private ICommand calcSalary;
+        public ICommand CalcSalary
+        {
+            get
+            {
+                if (calcSalary == null)
+                {
+                    calcSalary = new RelayCommand(param => CalcSalaryExecute(), param => CanCalcSalaryExecute());
+                }
+                return calcSalary;
+            }
+        }
+
+        /// <summary>
+        /// Executes the calc salary command
+        /// </summary>
+        private void CalcSalaryExecute()
+        {
+            try
+            {
+                EnterSalaryValue salaryValueWindow = new EnterSalaryValue(Employee);
+                salaryValueWindow.ShowDialog();
+                ManagersEmployees = service.GetAllEmployeesOnSpecificFloor(service.GetManagerFloorNumber(LoggedUser.CurrentUser.UserID));
+                EmployeesMonotorReport = service.GetAllEmployeesMonitorReportOnSpecificFloor(service.GetManagerFloorNumber(LoggedUser.CurrentUser.UserID));
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.ToString());
+            }
+        }
+
+        /// <summary>
+        /// Checks if its possible to add the new manager
+        /// </summary>
+        /// <returns>true</returns>
+        private bool CanCalcSalaryExecute()
+        {
+            return true;
+        }
+
+        /// <summary>
+        /// Command that tries to calculate all salary
+        /// </summary>
+        private ICommand calcAllSalary;
+        public ICommand CalcAllSalary
+        {
+            get
+            {
+                if (calcAllSalary == null)
+                {
+                    calcAllSalary = new RelayCommand(param => CalcAllSalaryExecute(), param => CanCalcAllSalaryExecute());
+                }
+                return calcAllSalary;
+            }
+        }
+
+        /// <summary>
+        /// Executes the calc all salary command
+        /// </summary>
+        private void CalcAllSalaryExecute()
+        {
+            try
+            {
+                EnterSalaryValue salaryValueWindow = new EnterSalaryValue();
+                salaryValueWindow.ShowDialog();
+                ManagersEmployees = service.GetAllEmployeesOnSpecificFloor(service.GetManagerFloorNumber(LoggedUser.CurrentUser.UserID));
+                EmployeesMonotorReport = service.GetAllEmployeesMonitorReportOnSpecificFloor(service.GetManagerFloorNumber(LoggedUser.CurrentUser.UserID));
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.ToString());
+            }
+        }
+
+        /// <summary>
+        /// Checks if its possible to add the new manager
+        /// </summary>
+        /// <returns>true</returns>
+        private bool CanCalcAllSalaryExecute()
+        {
+            return true;
+        }
+
+        /// <summary>
+        /// Command that tries to save the salary
+        /// </summary>
+        private ICommand saveSalary;
+        public ICommand SaveSalary
+        {
+            get
+            {
+                if (saveSalary == null)
+                {
+                    saveSalary = new RelayCommand(param => SaveSalaryExecute(), param => CanSaveSalaryeExecute());
+                }
+                return saveSalary;
+            }
+        }
+
+        /// <summary>
+        /// Tries the execute the save command
+        /// </summary>
+        private void SaveSalaryExecute()
+        {
+            try
+            {
+                if (!bgWorker.IsBusy && Employee == null)
+                {
+                    InfoLabelBG = "#17a2b8";
+                    InfoLabel = "Calculating salary";
+                    // This method will start the execution asynchronously in the background
+                    bgWorker.RunWorkerAsync();
+                    _isRunning = true;
+                }
+                else if (Employee != null)
+                {
+                    string salary = service.CalculateSalary(LoggedUser.CurrentUser.UserID, Employee, SalaryValue).ToString();
+                    Employee.Salary = salary;
+                    service.AddEmployee(Employee);
+                    salaryWindow.Close();
+                }
+                else if (bgWorker.IsBusy)
+                {
+                    InfoLabelBG = "#ffc107";
+                    InfoLabel = "Busy processing the request, please wait.";
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine("Exception" + ex.Message.ToString());
+            }
+        }
+
+        /// <summary>
+        /// Checks if its possible to save the employee
+        /// </summary>
+        protected bool CanSaveSalaryeExecute()
+        {
+            if (SalaryValue < 1 || SalaryValue > 1000)
+            {
+                return false;
+            }
+            else
+            {
+                return true;
+            }
+        }
+       
+        /// <summary>
+        /// Command that closes the window
+        /// </summary>
+        private ICommand cancel;
+        public ICommand Cancel
+        {
+            get
+            {
+                if (cancel == null)
+                {
+                    cancel = new RelayCommand(param => CancelExecute(), param => CanCancelExecute());
+                }
+                return cancel;
+            }
+        }
+
+        /// <summary>
+        /// Executes the close command
+        /// </summary>
+        private void CancelExecute()
+        {
+            try
+            {
+                salaryWindow.Close();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.ToString());
+            }
+        }
+
+        /// <summary>
+        /// Checks if its possible to execute the close command
+        /// </summary>
+        /// <returns>true</returns>
+        private bool CanCancelExecute()
+        {
+            return true;
+        }
+
+        /// <summary>
         /// Command that logs off the user
         /// </summary>
         private ICommand logoff;
@@ -409,9 +876,14 @@ namespace DAN_LIII_Kristina_Garcia_Francisco.ViewModel
         {
             try
             {
-                Login login = new Login();
-                allUsers.Close();
-                login.Show();
+                if (Application.Current.Windows.OfType<AllUsers>().FirstOrDefault() != null)
+                {
+                    allUsers.Close();
+                }
+                else if(Application.Current.Windows.OfType<Manager>().FirstOrDefault() != null)
+                {
+                    manWindow.Close();
+                }
             }
             catch (Exception ex)
             {

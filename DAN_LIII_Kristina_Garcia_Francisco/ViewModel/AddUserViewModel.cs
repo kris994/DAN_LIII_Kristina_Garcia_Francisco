@@ -26,7 +26,9 @@ namespace DAN_LIII_Kristina_Garcia_Francisco.ViewModel
             employee = new vwEmployee();
             addEmployee = addEmployeeOpen;
             AllInfoEmployeeList = service.GetAllEmployeesInfo().ToList();
+            ManagerList = service.GetAllManagers().ToList();
             EmployeeList = service.GetAllEmployees().ToList();
+            FloorNumberList = service.GetAllFloorNumbers().ToList();
             UserList = service.GetAllUsers().ToList();
         }
 
@@ -40,7 +42,9 @@ namespace DAN_LIII_Kristina_Garcia_Francisco.ViewModel
             employee = employeeEdit;
             addEmployee = addEmployeeOpen;
             AllInfoEmployeeList = service.GetAllEmployeesInfo().ToList();
+            ManagerList = service.GetAllManagers().ToList();
             EmployeeList = service.GetAllEmployees().ToList();
+            FloorNumberList = service.GetAllFloorNumbers().ToList();
             UserList = service.GetAllUsers().ToList();
         }
 
@@ -122,6 +126,23 @@ namespace DAN_LIII_Kristina_Garcia_Francisco.ViewModel
             {
                 employeeList = value;
                 OnPropertyChanged("EmployeeList");
+            }
+        }
+
+        /// <summary>
+        /// List of floor numbers
+        /// </summary>
+        private List<int> floorNumberList;
+        public List<int> FloorNumberList
+        {
+            get
+            {
+                return floorNumberList;
+            }
+            set
+            {
+                floorNumberList = value;
+                OnPropertyChanged("FloorNumberList");
             }
         }
 

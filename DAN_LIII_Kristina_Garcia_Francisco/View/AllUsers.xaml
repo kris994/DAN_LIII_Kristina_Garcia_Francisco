@@ -4,7 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:DAN_LIII_Kristina_Garcia_Francisco"
-        mc:Ignorable="d"
+        mc:Ignorable="d" Closing="DataWindow_Closing"
         Title="Users" Height="auto" MaxHeight="450" Width="auto" MaxWidth="1200">
     <Window.Resources>
     </Window.Resources>
@@ -24,7 +24,9 @@
             <Button Width="80" Height="20" Name="btnAddManager" Content="Add Manager"
                     Command="{Binding AddNewManager, UpdateSourceTrigger=PropertyChanged}" Margin="20,4,4,4" FontWeight="Bold"/>
         </StackPanel>
-        <Grid Grid.Column="1" Grid.Row="2" Height="auto" Width="auto">
+        <Rectangle Grid.Row="2" Fill="{Binding InfoLabelBG, Mode=OneWay}" />
+        <Label  Grid.Column="1" Grid.Row="2" Margin="20,4,4,4" HorizontalAlignment="Center" Foreground="White" VerticalAlignment="Stretch" Content="{Binding InfoLabel, Mode=OneWay}"/>
+        <Grid Grid.Column="1" Grid.Row="3" Height="auto" Width="auto">
             <DataGrid Name="DataGridEmployee" ItemsSource="{Binding AllInfoEmployeeList, UpdateSourceTrigger=PropertyChanged}"
                       SelectedItem="{Binding Employee, UpdateSourceTrigger=PropertyChanged}" IsReadOnly="True" HeadersVisibility="Column"
                       AutoGenerateColumns="False"
@@ -61,7 +63,7 @@
                 </DataGrid.Columns>
             </DataGrid>
         </Grid>
-        <Grid Grid.Column="1" Grid.Row="3" Height="auto" Width="auto">
+        <Grid Grid.Column="1" Grid.Row="4" Height="auto" Width="auto">
             <DataGrid Name="DataGridManager" ItemsSource="{Binding AllInfoManagerList, UpdateSourceTrigger=PropertyChanged}"
                       SelectedItem="{Binding Manager, UpdateSourceTrigger=PropertyChanged}" IsReadOnly="True" HeadersVisibility="Column"
                       AutoGenerateColumns="False"

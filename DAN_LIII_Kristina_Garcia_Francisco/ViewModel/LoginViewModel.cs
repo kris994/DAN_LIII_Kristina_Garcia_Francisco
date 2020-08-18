@@ -130,9 +130,9 @@ namespace DAN_LIII_Kristina_Garcia_Francisco.ViewModel
                         found = true;
                         if (service.GetAllManagers().Any(id => id.UserID == UserList[i].UserID) == true)
                         {
-                            AllUsers users = new AllUsers();
+                            Manager man = new Manager();
                             view.Close();
-                            users.Show();
+                            man.Show();
                         }
                         else if (service.GetAllEmployees().Any(id => id.UserID == UserList[i].UserID) == true)
                         {
@@ -143,11 +143,10 @@ namespace DAN_LIII_Kristina_Garcia_Francisco.ViewModel
                         break;
                     }
                 }
-
-                if (found == false)
-                {
-                    InfoLabel = "Wrong Username or Password";
-                }
+            }
+            if (found == false)
+            {
+                InfoLabel = "Wrong Username or Password";
             }
         }
         #endregion
