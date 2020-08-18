@@ -132,6 +132,24 @@ namespace DAN_LIII_Kristina_Garcia_Francisco.Helper
 
             return null;
         }
+
+
+        /// <summary>
+        /// The input cannot be empty
+        /// </summary>
+        /// <param name="name">name of the input</param>
+        /// <returns>null if the input is correct or string error message if its wrong</returns>
+        public string CannotBeEmpty(string name)
+        {
+            if (string.IsNullOrWhiteSpace(name))
+            {
+                return "Cannot be empty";
+            }
+            else
+            {
+                return null;
+            }
+        }
     }
 }
 

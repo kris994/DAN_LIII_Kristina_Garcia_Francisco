@@ -80,7 +80,6 @@
         <Label Grid.Column="1" Grid.Row="15" Name="lblGender" Content="Gender:" Padding="0" HorizontalAlignment="Right"/>
         <Label Grid.Column="1" Grid.Row="17" Name="lblCitizenship" Content="Citizenship:" Padding="0" HorizontalAlignment="Right"/>
         <Label Grid.Column="1" Grid.Row="19" Name="lblResponsibility" Content="Responsibility:" Padding="0" HorizontalAlignment="Right"/>
-        <Label Grid.Column="1" Grid.Row="21" Name="lblSalary" Content="Salary:" Padding="0" HorizontalAlignment="Right"/>
 
         <TextBox Grid.Column="3" Grid.Row="1" Name="txtFirstName" Height="20" Width="150" Style="{StaticResource textBoxInError}"
                  Text="{Binding Employee.FirstName, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True}"/>
@@ -112,9 +111,9 @@
         <TextBox Grid.Column="3" Grid.Row="11" Name="txtPassword" Height="20" Width="150" FontFamily="pack://application:,,,/Resources/#password"
                  Text="{Binding Employee.UserPassword, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True}"
                  Style="{StaticResource textBoxInError}"/>
-        <TextBox Grid.Column="3" Grid.Row="13" Name="txtFloorNumber" Height="20" Width="150"
-                 Text="{Binding Employee.FloorNumber, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True}"
-                 Style="{StaticResource textBoxInError}" PreviewTextInput="NumberValidationTextBox"/>
+        <ComboBox Grid.Column="3" Grid.Row="13" Name="cmbFloorNumber" Height="20" Width="150"
+                  IsEditable="False" ItemsSource="{Binding FloorNumberList, UpdateSourceTrigger=PropertyChanged}"
+                  SelectedItem="{Binding Employee.FloorNumber, UpdateSourceTrigger=PropertyChanged}"/>
         <StackPanel Orientation="Horizontal" Grid.Column="3" Grid.Row="15">
             <RadioButton  GroupName="gender" Width="65" Name="cbM" Content="Male" IsChecked="{Binding Employee.Gender, 
                 Converter={StaticResource ResourceKey=radioButtonConverter}, ConverterParameter=M, UpdateSourceTrigger=PropertyChanged}"></RadioButton>
@@ -123,10 +122,18 @@
         </StackPanel>
         <TextBox Grid.Column="3" Grid.Row="17" Name="txtCitizenship" Height="20" Width="150" Style="{StaticResource textBoxInError}"
                  Text="{Binding Employee.Citizenship, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True}"/>
-        <TextBox Grid.Column="3" Grid.Row="19" Name="txtResponsibility" Height="20" Width="150" Style="{StaticResource textBoxInError}"
-                 Text="{Binding Employee.Responsibility, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True}"/>
-        <TextBox Grid.Column="3" Grid.Row="21" Name="txtSalary" Height="20" Width="150" Style="{StaticResource textBoxInError}"
-                 Text="{Binding Employee.Salary, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True}"/>
+        <StackPanel Orientation="Horizontal" Grid.Column="3" Grid.Row="19">
+            <RadioButton  GroupName="Responsibility" Width="80" Name="cbCleaning" Content="Cleaning" IsChecked="{Binding Employee.Responsibility, 
+                Converter={StaticResource ResourceKey=radioButtonConverter}, ConverterParameter=Cleaning, UpdateSourceTrigger=PropertyChanged}"></RadioButton>
+            <RadioButton  GroupName="Responsibility" Width="80" Name="cbCook" Content="Cooking" IsChecked="{Binding Employee.Responsibility, 
+                Converter={StaticResource ResourceKey=radioButtonConverter}, ConverterParameter=Cooking, UpdateSourceTrigger=PropertyChanged}"></RadioButton>
+        </StackPanel>
+        <StackPanel Orientation="Horizontal" Grid.Column="3" Grid.Row="21">
+            <RadioButton  GroupName="Responsibility" Width="80" Name="cbMonitoring" Content="Monitoring" IsChecked="{Binding Employee.Responsibility, 
+                Converter={StaticResource ResourceKey=radioButtonConverter}, ConverterParameter=Monitoring, UpdateSourceTrigger=PropertyChanged}"></RadioButton>
+            <RadioButton  GroupName="Responsibility" Width="80" Name="cbReporting" Content="Reporting" IsChecked="{Binding Employee.Responsibility, 
+                Converter={StaticResource ResourceKey=radioButtonConverter}, ConverterParameter=Reporting, UpdateSourceTrigger=PropertyChanged}"></RadioButton>
+        </StackPanel>
 
         <Button Grid.Column="3" Grid.Row="27" IsDefault="True" Name="btnSave" Content="Save" Height="20" Width="70" HorizontalAlignment="Left"
                 Command="{Binding SaveEmployee, UpdateSourceTrigger=PropertyChanged}">
@@ -146,15 +153,6 @@
                             <Setter Property="IsEnabled" Value="False"/>
                         </DataTrigger>
                         <DataTrigger Binding="{Binding Text.Length, ElementName=txtPassword, UpdateSourceTrigger=PropertyChanged}" Value="0">
-                            <Setter Property="IsEnabled" Value="False"/>
-                        </DataTrigger>
-                        <DataTrigger Binding="{Binding Text.Length, ElementName=txtFloorNumber, UpdateSourceTrigger=PropertyChanged}" Value="0">
-                            <Setter Property="IsEnabled" Value="False"/>
-                        </DataTrigger>
-                        <DataTrigger Binding="{Binding Text.Length, ElementName=txtSalary, UpdateSourceTrigger=PropertyChanged}" Value="0">
-                            <Setter Property="IsEnabled" Value="False"/>
-                        </DataTrigger>
-                        <DataTrigger Binding="{Binding Text.Length, ElementName=txtResponsibility, UpdateSourceTrigger=PropertyChanged}" Value="0">
                             <Setter Property="IsEnabled" Value="False"/>
                         </DataTrigger>
                         <DataTrigger Binding="{Binding Text.Length, ElementName=txtCitizenship, UpdateSourceTrigger=PropertyChanged}" Value="0">

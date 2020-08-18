@@ -14,8 +14,10 @@ namespace DAN_LIII_Kristina_Garcia_Francisco.Model
         {
             "Gender",
             "Email",
-            "Salary",
-            "Username"
+            "Username",
+            "Gender",
+            "Responsibility",
+            "FloorNumber"
         };
 
         /// <summary>
@@ -68,8 +70,16 @@ namespace DAN_LIII_Kristina_Garcia_Francisco.Model
                         result = this.validation.IsValidEmailAddress(Email, UserID);
                         break;
 
-                    case "Salary":
-                        result = this.validation.IsDouble(Salary);
+                    case "Gender":
+                        result = this.validation.CannotBeEmpty(Gender);
+                        break;
+
+                    case "Responsibility":
+                        result = this.validation.CannotBeEmpty(Responsibility);
+                        break;
+
+                    case "FloorNumber":
+                        result = this.validation.CannotBeEmpty(FloorNumber.ToString());
                         break;
 
                     default:

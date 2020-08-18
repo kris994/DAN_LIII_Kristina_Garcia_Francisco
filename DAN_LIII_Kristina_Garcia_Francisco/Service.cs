@@ -79,6 +79,59 @@ namespace DAN_LIII_Kristina_Garcia_Francisco
         }
 
         /// <summary>
+        /// Gets all employees on specific floor
+        /// </summary>
+        /// <param name="floorNumber">floor number</param>
+        /// <returns>a list of found employees</returns>
+        public List<vwEmployee> GetAllEmployeesOnSpecificFloor(int floorNumber)
+        {
+            List<vwEmployee> list = new List<vwEmployee>();
+            for (int i = 0; i < GetAllEmployees().Count; i++)
+            {
+                if (GetAllEmployees()[i].FloorNumber == floorNumber)
+                {
+                    list.Add(GetAllEmployeesInfo()[i]);
+                }
+            }
+            return list;
+        }
+
+        /// <summary>
+        /// Gets managers floor number
+        /// </summary>
+        /// <param name="userID">Manager on that floor</param>
+        /// <returns>a list of found employees</returns>
+        public int GetManagerFloorNumber(int userID)
+        {
+            for (int i = 0; i < GetAllManagers().Count; i++)
+            {
+                if (GetAllManagers()[i].UserID == userID)
+                {
+                    return GetAllManagers()[i].FloorNumber;
+                }
+            }
+            return 0;
+        }
+
+        /// <summary>
+        /// Gets all employees on specific floorthat monitor or report
+        /// </summary>
+        /// <returns>a list of found employees</returns>
+        public List<vwEmployee> GetAllEmployeesMonitorReportOnSpecificFloor(int floorNumber)
+        {
+            List<vwEmployee> list = new List<vwEmployee>();
+            for (int i = 0; i < GetAllEmployeesOnSpecificFloor(floorNumber).Count; i++)
+            {
+                if (GetAllEmployeesOnSpecificFloor(floorNumber)[i].Responsibility == "Monitoring" ||
+                    GetAllEmployeesOnSpecificFloor(floorNumber)[i].Responsibility == "Reporting")
+                {
+                    list.Add(GetAllEmployeesOnSpecificFloor(floorNumber)[i]);
+                }
+            }
+            return list;
+        }
+
+        /// <summary>
         /// Gets all information about managers
         /// </summary>
         /// <returns>a list of found managers</returns>
@@ -123,6 +176,25 @@ namespace DAN_LIII_Kristina_Garcia_Francisco
         }
 
         /// <summary>
+        /// Gets all floor numbers where are managers
+        /// </summary>
+        /// <returns>List of floors</returns>
+        public List<int> GetAllFloorNumbers()
+        {
+            List<int> floors = new List<int>();
+
+            if (GetAllManagers().Any())
+            {
+                for (int i = 0; i < GetAllManagers().Count; i++)
+                {
+                    floors.Add(GetAllManagers()[i].FloorNumber);
+                }
+            }
+
+            return floors;
+        }
+
+        /// <summary>
         /// Search if user with that ID exists in the user table
         /// </summary>
         /// <param name="userID">Takes the user id that we want to search for</param>
@@ -149,6 +221,66 @@ namespace DAN_LIII_Kristina_Garcia_Francisco
             {
                 Debug.WriteLine("Exception " + ex.Message.ToString());
                 return false;
+            }
+        }
+
+        /// <summary>
+        /// Checks for the manager with given userID
+        /// </summary>
+        /// <param name="userID">Takes the user id that we want to search for</param>
+        /// <returns>the found manager if it exists</returns>
+        public vwManager GetManagerUserID(int userID)
+        {
+            try
+            {
+                using (HotelDBEntities context = new HotelDBEntities())
+                {
+                    vwManager manager = GetAllManagersInfo().Where(man => man.UserID == userID).FirstOrDefault();
+
+                    if (manager != null)
+                    {
+                        return manager;
+                    }
+                    else
+                    {
+                        return null;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine("Exception " + ex.Message.ToString());
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Checks for the employee with given userID
+        /// </summary>
+        /// <param name="userID">Takes the user id that we want to search for</param>
+        /// <returns>the found employee if it exists</returns>
+        public vwEmployee GetEmployeeUserID(int userID)
+        {
+            try
+            {
+                using (HotelDBEntities context = new HotelDBEntities())
+                {
+                    vwEmployee employee = GetAllEmployeesInfo().Where(emp => emp.UserID == userID).FirstOrDefault();
+
+                    if (employee != null)
+                    {
+                        return employee;
+                    }
+                    else
+                    {
+                        return null;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine("Exception " + ex.Message.ToString());
+                return null;
             }
         }
 
@@ -402,6 +534,50 @@ namespace DAN_LIII_Kristina_Garcia_Francisco
                 Debug.WriteLine("Exception" + ex.Message.ToString());
             }
         }
+
+        public double CalculateSalary(int userID, vwEmployee emp, int value)
+        {
+            vwManager man = GetManagerUserID(userID);
+
+            int educationValue = 0;
+            double genderValue = 0;
+            switch (man.EducationDegree)
+            {
+                case "I":
+                    educationValue = 1;
+                    break;
+                case "II":
+                    educationValue = 2;
+                    break;
+                case "III":
+                    educationValue = 3;
+                    break;
+                case "IV":
+                    educationValue = 4;
+                    break;
+                case "V":
+                    educationValue = 5;
+                    break;
+                case "VI":
+                    educationValue = 6;
+                    break;
+                case "VII":
+                    educationValue = 7;
+                    break;
+                default:
+                    educationValue = 0;
+                    break;
+            }
+
+            if (emp.Gender == "M")
+            {
+                genderValue = 1.12;
+            }
+            else
+            {
+                genderValue = 1.15;
+            }
+            return Math.Round((1000 * man.YearsOfExperience * 0.75 * educationValue * 0.15 * genderValue + value), 2); ;
+        }
     }
 }
-
