@@ -255,6 +255,36 @@ namespace DAN_LIII_Kristina_Garcia_Francisco
         }
 
         /// <summary>
+        /// Checks for the employee with given userID
+        /// </summary>
+        /// <param name="userID">Takes the user id that we want to search for</param>
+        /// <returns>the found employee if it exists</returns>
+        public vwEmployee GetEmployeeUserID(int userID)
+        {
+            try
+            {
+                using (HotelDBEntities context = new HotelDBEntities())
+                {
+                    vwEmployee employee = GetAllEmployeesInfo().Where(emp => emp.UserID == userID).FirstOrDefault();
+
+                    if (employee != null)
+                    {
+                        return employee;
+                    }
+                    else
+                    {
+                        return null;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine("Exception " + ex.Message.ToString());
+                return null;
+            }
+        }
+
+        /// <summary>
         /// Creates or edits an employee
         /// </summary>
         /// <param name="employee">the employee that is being added</param>

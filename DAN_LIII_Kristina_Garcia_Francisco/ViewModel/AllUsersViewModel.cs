@@ -19,7 +19,10 @@ namespace DAN_LIII_Kristina_Garcia_Francisco.ViewModel
     {
         AllUsers allUsers;
         Manager manWindow;
+        Employee empWindow;
         EnterSalaryValue salaryWindow;
+        SalaryPreview salaryPreviwWindow;
+
         Service service = new Service();
         /// <summary>
         /// Background worker
@@ -57,6 +60,17 @@ namespace DAN_LIII_Kristina_Garcia_Francisco.ViewModel
         }
 
         /// <summary>
+        /// Constructor with employee window param
+        /// </summary>
+        /// <param name="AllUsers">opens the manager window</param>
+        public AllUsersViewModel(Employee usersOpen)
+        {
+            empWindow = usersOpen;
+            vwEmployee emp = service.GetEmployeeUserID(LoggedUser.CurrentUser.UserID);
+            employeeInfoLabel = $"Responsibility: {emp.Responsibility}\nFloor: {emp.FloorNumber}";
+        }
+
+        /// <summary>
         /// Constructor with EnterSalaryValue window param
         /// </summary>
         /// <param name="salaryOpen">opens the salary window</param>
@@ -65,6 +79,18 @@ namespace DAN_LIII_Kristina_Garcia_Francisco.ViewModel
         {
             employee = employeeEdit;
             salaryWindow = salaryOpen;
+        }
+
+        /// <summary>
+        /// Constructor with EnterSalaryValue window param
+        /// </summary>
+        /// <param name="salaryOpen">opens the salary window</param>
+        /// <param name="employeeEdit">gets the employee info that is being edited</param>
+        public AllUsersViewModel(SalaryPreview salaryOpen, vwEmployee employeeEdit)
+        {
+            employee = employeeEdit;
+            salaryPreviwWindow = salaryOpen;
+            CurrentSalaryValue = employeeEdit.Salary;
         }
 
         /// <summary>
@@ -258,6 +284,23 @@ namespace DAN_LIII_Kristina_Garcia_Francisco.ViewModel
         }
 
         /// <summary>
+        /// EmployeeInfo label
+        /// </summary>
+        private string employeeInfoLabel;
+        public string EmployeeInfoLabel
+        {
+            get
+            {
+                return employeeInfoLabel;
+            }
+            set
+            {
+                employeeInfoLabel = value;
+                OnPropertyChanged("EmployeeInfoLabel");
+            }
+        }
+
+        /// <summary>
         /// Info label background
         /// </summary>
         private string infoLabelBG;
@@ -309,6 +352,23 @@ namespace DAN_LIII_Kristina_Garcia_Francisco.ViewModel
         }
 
         /// <summary>
+        /// Current Salary value
+        /// </summary>
+        private string currentSalaryValue;
+        public string CurrentSalaryValue
+        {
+            get
+            {
+                return currentSalaryValue;
+            }
+            set
+            {
+                currentSalaryValue = value;
+                OnPropertyChanged("CurrentSalaryValue");
+            }
+        }
+
+        /// <summary>
         /// The progress bar property
         /// </summary>
         private int currentProgress;
@@ -342,6 +402,23 @@ namespace DAN_LIII_Kristina_Garcia_Francisco.ViewModel
             {
                 progressBarVisibility = value;
                 OnPropertyChanged("ProgressBarVisibility");
+            }
+        }
+
+        /// <summary>
+        /// The salary button property
+        /// </summary>
+        private Visibility salaryDefined;
+        public Visibility SalaryDefined
+        {
+            get
+            {
+                return salaryDefined;
+            }
+            set
+            {
+                salaryDefined = value;
+                OnPropertyChanged("SalaryDefined");
             }
         }
         #endregion
@@ -706,32 +783,30 @@ namespace DAN_LIII_Kristina_Garcia_Francisco.ViewModel
         }
 
         /// <summary>
-        /// Command that tries to calculate all salary
+        /// Command that tries to show salary
         /// </summary>
-        private ICommand calcAllSalary;
-        public ICommand CalcAllSalary
+        private ICommand showSalary;
+        public ICommand ShowSalary
         {
             get
             {
-                if (calcAllSalary == null)
+                if (showSalary == null)
                 {
-                    calcAllSalary = new RelayCommand(param => CalcAllSalaryExecute(), param => CanCalcAllSalaryExecute());
+                    showSalary = new RelayCommand(param => ShowSalaryExecute(), param => CanShowSalaryExecute());
                 }
-                return calcAllSalary;
+                return showSalary;
             }
         }
 
         /// <summary>
-        /// Executes the calc all salary command
+        /// Executes the show salary command
         /// </summary>
-        private void CalcAllSalaryExecute()
+        private void ShowSalaryExecute()
         {
             try
             {
-                EnterSalaryValue salaryValueWindow = new EnterSalaryValue();
-                salaryValueWindow.ShowDialog();
-                ManagersEmployees = service.GetAllEmployeesOnSpecificFloor(service.GetManagerFloorNumber(LoggedUser.CurrentUser.UserID));
-                EmployeesMonotorReport = service.GetAllEmployeesMonitorReportOnSpecificFloor(service.GetManagerFloorNumber(LoggedUser.CurrentUser.UserID));
+                SalaryPreview salaryP = new SalaryPreview(service.GetEmployeeUserID(LoggedUser.CurrentUser.UserID));
+                salaryP.ShowDialog();
             }
             catch (Exception ex)
             {
@@ -743,9 +818,18 @@ namespace DAN_LIII_Kristina_Garcia_Francisco.ViewModel
         /// Checks if its possible to add the new manager
         /// </summary>
         /// <returns>true</returns>
-        private bool CanCalcAllSalaryExecute()
+        private bool CanShowSalaryExecute()
         {
-            return true;
+            if (service.GetEmployeeUserID(LoggedUser.CurrentUser.UserID).Salary != null)
+            {
+                SalaryDefined = Visibility.Visible;
+                return true;
+            }
+            else
+            {
+                SalaryDefined = Visibility.Collapsed;
+                return false;
+            }            
         }
 
         /// <summary>
@@ -883,6 +967,10 @@ namespace DAN_LIII_Kristina_Garcia_Francisco.ViewModel
                 else if(Application.Current.Windows.OfType<Manager>().FirstOrDefault() != null)
                 {
                     manWindow.Close();
+                }
+                else if (Application.Current.Windows.OfType<Employee>().FirstOrDefault() != null)
+                {
+                    empWindow.Close();
                 }
             }
             catch (Exception ex)
