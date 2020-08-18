@@ -77,6 +77,7 @@ namespace DAN_LIII_Kristina_Garcia_Francisco.ViewModel
         /// <param name="employeeEdit">gets the employee info that is being edited</param>
         public AllUsersViewModel(EnterSalaryValue salaryOpen, vwEmployee employeeEdit)
         {
+            ProgressBarVisibility = Visibility.Collapsed;
             employee = employeeEdit;
             salaryWindow = salaryOpen;
         }
@@ -449,7 +450,7 @@ namespace DAN_LIII_Kristina_Garcia_Francisco.ViewModel
             int counter = EmployeesMonotorReport.Count;
             for (int i = 1; i < counter + 1; i++)
             {
-                Thread.Sleep(1000);
+                Thread.Sleep(250);
                 // Calling ReportProgress() method raises ProgressChanged event
                 // To this method pass the percentage of processing that is complete
 
@@ -778,6 +779,49 @@ namespace DAN_LIII_Kristina_Garcia_Francisco.ViewModel
         /// </summary>
         /// <returns>true</returns>
         private bool CanCalcSalaryExecute()
+        {
+            return true;
+        }
+
+        /// <summary>
+        /// Command that tries to calculate salary
+        /// </summary>
+        private ICommand calcAllSalary;
+        public ICommand CalcAllSalary
+        {
+            get
+            {
+                if (calcAllSalary == null)
+                {
+                    calcAllSalary = new RelayCommand(param => CalcAllSalaryExecute(), param => CanCalcAllSalaryExecute());
+                }
+                return calcAllSalary;
+            }
+        }
+
+        /// <summary>
+        /// Executes the calc salary command
+        /// </summary>
+        private void CalcAllSalaryExecute()
+        {
+            try
+            {
+                EnterSalaryValue salaryValueWindow = new EnterSalaryValue();
+                salaryValueWindow.ShowDialog();
+                ManagersEmployees = service.GetAllEmployeesOnSpecificFloor(service.GetManagerFloorNumber(LoggedUser.CurrentUser.UserID));
+                EmployeesMonotorReport = service.GetAllEmployeesMonitorReportOnSpecificFloor(service.GetManagerFloorNumber(LoggedUser.CurrentUser.UserID));
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.ToString());
+            }
+        }
+
+        /// <summary>
+        /// Checks if its possible to add the new manager
+        /// </summary>
+        /// <returns>true</returns>
+        private bool CanCalcAllSalaryExecute()
         {
             return true;
         }
