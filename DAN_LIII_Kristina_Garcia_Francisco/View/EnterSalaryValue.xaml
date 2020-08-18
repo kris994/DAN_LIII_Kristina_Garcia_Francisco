@@ -43,7 +43,7 @@
         <Label Content="{Binding SalaryInfoLabel, Mode=OneWay}" HorizontalAlignment="Center" Grid.Column="1" Grid.ColumnSpan="3"
                Margin="0,40,0,0" Grid.Row="5" VerticalAlignment="Top" RenderTransformOrigin="-0.149,0.41"/>
 
-        <Button Grid.Column="3" Grid.Row="7" IsDefault="True" Name="btnSaveSalary" Content="Save" Height="20" Width="70" HorizontalAlignment="Left"
+        <Button Grid.Column="3" Grid.Row="7" IsDefault="True" Name="btnSaveSalary" Content="Calculate" Height="20" Width="70" HorizontalAlignment="Left"
                 Command="{Binding SaveSalary, UpdateSourceTrigger=PropertyChanged}">
             <Button.Style>
                 <Style TargetType="{x:Type Button}">
